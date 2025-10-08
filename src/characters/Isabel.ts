@@ -1,49 +1,92 @@
 import { Character } from '../Character';
+import { LogKeeper } from '../LogKeeper';
 import { roll, roll20 } from '../roll';
-import { EMainCharacteristics, TActionProps, TMainCharacteristics } from '../types/character.types';
+import {
+  EMainCharacteristics,
+  TAction,
+  TActionProps,
+  TAttack,
+  TCharProps,
+  TMainCharacteristics,
+  TTacticAction,
+  TTurnData,
+} from '../types/character.types';
+import { TDuelContext } from '../types/common.types';
 
 const characteristics: TMainCharacteristics = { STR: 8, DEX: 18, CON: 10, INT: 13, WIS: 12, CHA: 16 };
 
-export const Isabel = new Character({
-  name: 'Isabel',
-  characteristics,
-  battleCharacteristics: { AC: 16, HP: 54 },
-  attackMap: {
-    kerambit: {
-      attackRoll: ({ context, thisChar }) => {
-        // TODO: 68.5 перенести этот лог в Duel
-        console.log(thisChar.name, `use ATTACK 'kerambit'`);
+export class Isabel extends Character {
+  attackMap: Record<string, TAttack>;
+  actionMap: Record<string, TAction>;
 
-        if (!thisChar) throw new Error('attackRoll | thisChar is undefined');
+  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
+    super(logKeeper, {
+      name: 'Isabel',
+      characteristics,
+      battleCharacteristics: { AC: 16, HP: 54 },
 
-        const mainRoll = roll20({ advantage: context.darkness });
+      proficiency: 4,
+      resources: {
+        bardicInspirationCount: Math.floor((characteristics.CHA - 10) / 2),
+        poison: 1,
+      },
+      ...overrideCharProps,
+    });
+
+    this.attackMap = {
+      kerambit: this.kerambit(),
+    };
+    this.actionMap = {
+      spell_darkness: this.spell_darkness,
+    };
+  }
+
+  tactic({ context }: TTurnData): TTacticAction {
+    if (!this.isAdvantage(context)) {
+      return { type: 'action', key: 'spell_darkness' };
+    }
+    return { type: 'attack', key: 'kerambit' };
+  }
+
+  private kerambit(): TAttack {
+    return {
+      attackRoll: ({ context }) => {
+        const advantage = this.isAdvantage(context);
+        if (advantage) {
+          this.addLog('attack with advantage');
+        }
+        const mainRoll = roll20({ advantage });
 
         return {
-          result: thisChar.proficiency + thisChar.getModifier(EMainCharacteristics.DEX) + mainRoll.result,
+          result: this.proficiency + this.getModifier(EMainCharacteristics.DEX) + mainRoll.result,
           isCritSuccess: mainRoll.isCritSuccess,
         };
       },
-      damageRoll: ({ context, isCritSuccess, thisChar, enemy }) => {
+      damageRoll: ({ context, isCritSuccess: isAttackRollHasCritSuccess, enemy }) => {
         let result = 0;
+        const isCritSuccess = isAttackRollHasCritSuccess || this.isUnawares(context);
+        if (isCritSuccess) {
+          this.addLog('damage with CRIT success');
+        }
 
-        const dexMod = thisChar.getModifier(EMainCharacteristics.DEX);
+        const dexMod = this.getModifier(EMainCharacteristics.DEX);
         result += dexMod;
 
         const daggerDam = roll(isCritSuccess ? 'D4' : '2D4');
         result += daggerDam;
 
-        const isSneak = context.darkness;
+        const isSneak = this.isAdvantage(context);
         if (isSneak) {
           const sneakDam = roll(isCritSuccess ? '2D6' : '4D6');
           result += sneakDam;
         }
 
-        if (thisChar.getResource('bardicInspirationCount')) {
+        if (this.getResource('bardicInspirationCount')) {
           const whispDam = roll(isCritSuccess ? '3D6' : '6D6');
           result += whispDam;
         }
 
-        if (thisChar.getResource('poison')) {
+        if (this.getResource('poison')) {
           const fullPoisonDam = roll('3D6');
           const poisonDam = enemy.savingThrow(EMainCharacteristics.CON, 11)
             ? Math.floor(fullPoisonDam / 2)
@@ -53,27 +96,30 @@ export const Isabel = new Character({
 
         return result;
       },
-    },
-  },
-  actionMap: {
-    darkness: ({ thisChar, setContext }: TActionProps) => {
-      // TODO: 68.6 своевременность вызова этого метода
+    };
+  }
 
-      // TODO: 68.5 перенести этот лог в Duel
-      console.log(thisChar.name, `use ACTION 'darkness'`);
+  private isLiquidation(context: TDuelContext): boolean {
+    const result = context.turnNumber <= 1;
 
-      setContext({ darkness: true });
-    },
-  },
-  tactic: ({ context }) => {
-    if (!context.darkness) {
-      return { type: 'action', key: 'darkness' };
-    }
-    return { type: 'attack', key: 'kerambit' };
-  },
-  proficiency: 4,
-  resources: {
-    bardicInspirationCount: Math.floor((characteristics.CHA - 10) / 2),
-    poison: 1,
-  },
-});
+    if (result) this.addLog('used Liquidation');
+
+    return result;
+  }
+
+  private isUnawares(context: TDuelContext): boolean {
+    const result = context.turnNumber === 0;
+
+    if (result) this.addLog('used Unawares');
+
+    return result;
+  }
+
+  private spell_darkness({ setContext }: TActionProps): ReturnType<TAction> {
+    setContext({ darkness: true });
+  }
+
+  private isAdvantage(context: TDuelContext): boolean {
+    return context.darkness || this.isLiquidation(context);
+  }
+}
