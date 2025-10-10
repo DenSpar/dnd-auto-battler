@@ -1,3 +1,4 @@
+import { LogKeeper } from './LogKeeper';
 import { roll20 } from './roll';
 import {
   EMainCharacteristics,
@@ -10,36 +11,32 @@ import {
   TTacticAction,
   TTurnData,
 } from './types/character.types';
-import { TDuelContext } from './types/common.types';
 
-export class Character implements TCharProps {
+export abstract class Character implements TCharProps {
+  logKeeper: LogKeeper;
+
   name: string;
   characteristics: TMainCharacteristics;
   battleCharacteristics: TBattleCharacteristics;
-  attackMap: Record<string, TAttack>;
-  actionMap: Record<string, TAction>;
-  tactic: (props: TTurnData) => TTacticAction;
 
   modifiers: TModifiers;
   proficiency: number;
   resources: Record<string, number>;
 
-  constructor(props: TCharProps) {
+  abstract attackMap: Record<string, TAttack>;
+  abstract actionMap: Record<string, TAction>;
+  abstract tactic(props: TTurnData): TTacticAction;
+
+  constructor(logKeeper: LogKeeper, props: TCharProps) {
+    this.logKeeper = logKeeper;
+
     this.name = props.name;
     this.characteristics = props.characteristics;
     this.battleCharacteristics = props.battleCharacteristics;
-    this.attackMap = props.attackMap;
-    this.actionMap = props.actionMap;
-    this.tactic = props.tactic;
 
     this.modifiers = props.modifiers || {};
     this.proficiency = props.proficiency || 0;
     this.resources = props.resources || {};
-
-    // заклы + кол-во
-    // ресурсы(3 раза может нанести доп урон)
-    // тактика
-    // преимущество(для атаки)(будут учтены в атаках)
   }
 
   rollIninitiative() {
@@ -73,14 +70,9 @@ export class Character implements TCharProps {
     return thr.result + modifier >= difficult;
   }
 
-  attemptAttack(attack: TAttack, context: TDuelContext) {
-    console.log({ attack, context });
-    throw new Error('TODO: доделать attemptAttack');
-  }
-
   takeDamage(damage: number) {
     this.battleCharacteristics.HP -= damage;
-    console.log(`${this.name} get ${damage} damage, rest ${this.battleCharacteristics.HP} HP`);
+    this.addLog(`get ${damage} damage, rest ${this.battleCharacteristics.HP} HP`);
     return this.isAlive();
   }
 
@@ -108,6 +100,10 @@ export class Character implements TCharProps {
       throw new Error(`Action key '${actionKey}' not found`);
     }
     return action;
+  }
+
+  addLog(message: string) {
+    this.logKeeper.addLog(this.name, message);
   }
 
   private isAlive(): boolean {

@@ -21,7 +21,7 @@ export type TModifiers = {
   inititive?: number;
 } & Partial<TMainCharacteristics>;
 
-export type TTurnData = { context: TDuelContext; thisChar: Character; enemy: Character };
+export type TTurnData = { context: TDuelContext; enemy: Character };
 
 export type TAttack = {
   attackRoll(props: TTurnData): {
@@ -40,9 +40,6 @@ export type TCharProps = {
   name: string;
   characteristics: TMainCharacteristics;
   battleCharacteristics: TBattleCharacteristics;
-  attackMap: Record<string, TAttack>;
-  actionMap: Record<string, TAction>;
-  tactic(props: TTurnData): TTacticAction;
 
   modifiers?: TModifiers;
   proficiency?: number;
