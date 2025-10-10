@@ -11,5 +11,7 @@ export enum EDices {
 export type TDices = `${EDices}`;
 
 export type TDuelContext = {
+  turnNumber: number;
+
   darkness?: boolean;
 };

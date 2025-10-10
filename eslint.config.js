@@ -71,6 +71,15 @@ module.exports = [
     },
   },
 
+  // Правила для файлов с тестами
+  {
+    files: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
+    ignores: ['src/types/**/*.ts'],
+    rules: {
+      'sonarjs/no-skipped-tests': 'off',
+    },
+  },
+
   // Игнорируемые файлы
   {
     ignores: [
