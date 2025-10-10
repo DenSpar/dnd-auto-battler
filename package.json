@@ -1,11 +1,23 @@
 {
   "scripts": {
-    "test:unit": "jest -c tests/configs/jest/jest.config.ts --testRegex=\".*\\.spec\\.ts$\""
+    "test:unit": "jest -c tests/configs/jest/jest.config.ts --testRegex=\".*\\.spec\\.ts$\"",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts"
   },
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
     "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "dotenv": "^17.2.3",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-sonarjs": "^3.0.5",
     "jest": "^30.2.0",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
