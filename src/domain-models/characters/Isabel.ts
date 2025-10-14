@@ -1,6 +1,5 @@
-import { Character } from '../Character';
-import { LogKeeper } from '../LogKeeper';
-import { roll, roll20 } from '../roll';
+import { LogKeeper } from '../../LogKeeper';
+import { roll, roll20 } from '../../roll';
 import {
   EMainCharacteristics,
   TAction,
@@ -10,8 +9,9 @@ import {
   TMainCharacteristics,
   TTacticAction,
   TTurnData,
-} from '../types/character.types';
-import { TDuelContext } from '../types/common.types';
+} from '../../types/character.types';
+import { TDuelContext } from '../../types/common.types';
+import { Character } from '../Character';
 
 const characteristics: TMainCharacteristics = { STR: 8, DEX: 18, CON: 10, INT: 13, WIS: 12, CHA: 16 };
 
@@ -30,6 +30,7 @@ export class Isabel extends Character {
         bardicInspirationCount: Math.floor((characteristics.CHA - 10) / 2),
         poison: 1,
       },
+      passiveSkills: { blindSight: true },
       ...overrideCharProps,
     });
 
@@ -41,8 +42,8 @@ export class Isabel extends Character {
     };
   }
 
-  tactic({ context }: TTurnData): TTacticAction {
-    if (!this.isAdvantage(context)) {
+  tactic({ context, enemy }: TTurnData): TTacticAction {
+    if (!this.isAdvantage(context, enemy) && enemy.canBeBlinded()) {
       return { type: 'action', key: 'spell_darkness' };
     }
     return { type: 'attack', key: 'kerambit' };
@@ -50,8 +51,8 @@ export class Isabel extends Character {
 
   private kerambit(): TAttack {
     return {
-      attackRoll: ({ context }) => {
-        const advantage = this.isAdvantage(context);
+      attackRoll: ({ context, enemy }) => {
+        const advantage = this.isAdvantage(context, enemy);
         if (advantage) {
           this.addLog('attack with advantage');
         }
@@ -75,7 +76,7 @@ export class Isabel extends Character {
         const daggerDam = roll(isCritSuccess ? 'D4' : '2D4');
         result += daggerDam;
 
-        const isSneak = this.isAdvantage(context);
+        const isSneak = this.isAdvantage(context, enemy);
         if (isSneak) {
           const sneakDam = roll(isCritSuccess ? '2D6' : '4D6');
           result += sneakDam;
@@ -99,6 +100,11 @@ export class Isabel extends Character {
     };
   }
 
+  // TODO: 68.4 переделать Ликвидацию
+  /**
+   * Вы совершаете с преимуществом броски атаки по всем существам, которые еще не совершали ход в этом бою.
+   * Кроме того, все попадания по существам, захваченным в расплох, являются критическими попаданиями
+   */
   private isLiquidation(context: TDuelContext): boolean {
     const result = context.turnNumber <= 1;
 
@@ -119,7 +125,7 @@ export class Isabel extends Character {
     setContext({ darkness: true });
   }
 
-  private isAdvantage(context: TDuelContext): boolean {
-    return context.darkness || this.isLiquidation(context);
+  private isAdvantage(context: TDuelContext, enemy: Character): boolean {
+    return (context.darkness && enemy.isBlinded(context)) || this.isLiquidation(context);
   }
 }

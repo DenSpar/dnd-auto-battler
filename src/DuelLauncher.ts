@@ -1,27 +1,29 @@
 import { Duel } from './Duel';
 import { LogKeeper } from './LogKeeper';
-import { TTestedCharacters } from './types/tested-chars.types';
-import { TTestedEnemies } from './types/tested-enemies.types';
+import { TTestedCharacters, TTestedNpcs } from './types/chars-list.types';
+import {
+  IDuelLauncherCreatingProps,
+  TDuelLauncherLogSettings,
+  TDuelLauncherResults,
+  TDuelLauncherRetries,
+} from './types/duel-launcher.types';
 
-type TResult = { win: number; lose: number; drawnGame: number };
-interface IDuelLauncherCreatingProps {
-  chars: { tested: TTestedCharacters; enemy: TTestedEnemies };
-  retries?: { withUnawares: number; withoutUnawares: number };
-}
 export class DuelLauncher {
   // incomings args
   private TestedChar: TTestedCharacters;
-  private TestedEnemy: TTestedEnemies;
-  private retries: { withUnawares: number; withoutUnawares: number };
+  private TestedEnemy: TTestedNpcs;
+  private retries: TDuelLauncherRetries;
+  private logSettings: TDuelLauncherLogSettings;
 
   // private props
-  private results: { withUnawares: TResult; withoutUnawares: TResult };
+  private results: { withUnawares: TDuelLauncherResults; withoutUnawares: TDuelLauncherResults };
   private logKeeper: LogKeeper;
 
   constructor(props: IDuelLauncherCreatingProps) {
     this.TestedChar = props.chars.tested;
     this.TestedEnemy = props.chars.enemy;
     this.retries = props.retries || { withUnawares: 10, withoutUnawares: 10 };
+    this.logSettings = props.logSettings || {};
 
     this.results = {
       withUnawares: { win: 0, lose: 0, drawnGame: 0 },
@@ -34,12 +36,14 @@ export class DuelLauncher {
     this.runDuelWithSettings(true, this.retries.withUnawares);
     this.runDuelWithSettings(false, this.retries.withoutUnawares);
 
-    this.addLog(
-      `   WITH unawares: WINS-${this.results.withUnawares.win}, LOSES-${this.results.withUnawares.lose}, DRAWN GAMES-${this.results.withUnawares.drawnGame}`
-    );
-    this.addLog(
+    this.unshiftLog(
       `WITHOUT unawares: WINS-${this.results.withoutUnawares.win}, LOSES-${this.results.withoutUnawares.lose}, DRAWN GAMES-${this.results.withoutUnawares.drawnGame}`
     );
+    this.unshiftLog(
+      `   WITH unawares: WINS-${this.results.withUnawares.win}, LOSES-${this.results.withUnawares.lose}, DRAWN GAMES-${this.results.withUnawares.drawnGame}`
+    );
+    this.unshiftLog(`${this.TestedChar.name} vs ${this.TestedEnemy.name}`);
+
     this.logKeeper.showLogsIfNeed();
   }
 
@@ -57,14 +61,20 @@ export class DuelLauncher {
         this.addResultLose(withUnawares);
         this.addLog(`${testedChar.name} lose in duel. Try ${i + 1}/${retries}`);
 
-        const defeatDuelLogs = duelLogKeeper.prettyLogs;
-        defeatDuelLogs.forEach((log) => {
-          this.addLog(`>>> ${log}`);
-        });
+        if (this.logSettings.lose) {
+          duelLogKeeper.prettyLogs.forEach((log) => {
+            this.addLog(`>>> ${log}`);
+          });
+        }
       } else if (testedEnemy.battleCharacteristics.HP < 0) {
         this.addResultWin(withUnawares);
       } else {
         this.addResultDrawnGame(withUnawares);
+        if (this.logSettings.drawnGame) {
+          duelLogKeeper.prettyLogs.forEach((log) => {
+            this.addLog(`>>> ${log}`);
+          });
+        }
       }
     }
   }
@@ -95,5 +105,9 @@ export class DuelLauncher {
 
   private addLog(message: string) {
     this.logKeeper.addLog('DuelLauncher', message);
+  }
+
+  private unshiftLog(message: string) {
+    this.logKeeper.unshiftLog('DuelLauncher', message);
   }
 }
