@@ -1,4 +1,4 @@
-import { Character } from './Character';
+import { Character } from './domain-models/Character';
 import { LogKeeper } from './LogKeeper';
 import { TTacticAction } from './types/character.types';
 import { TDuelContext } from './types/common.types';
@@ -9,11 +9,9 @@ interface IDuelCreatingProps {
   withUnawares?: boolean;
 }
 export class Duel {
-  // public, not changed
-  public testedChar: Character;
-  public testedEnemy: Character;
-
   // private, not changed
+  private testedChar: Character;
+  private testedEnemy: Character;
   private withUnawares: boolean;
 
   // private, changed

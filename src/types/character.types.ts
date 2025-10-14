@@ -1,4 +1,4 @@
-import { Character } from '../Character';
+import { Character } from '../domain-models/Character';
 import { Duel } from '../Duel';
 
 import { TDuelContext } from './common.types';
@@ -44,7 +44,19 @@ export type TCharProps = {
   modifiers?: TModifiers;
   proficiency?: number;
   resources?: Record<string, number>;
+  passiveSkills?: Partial<Record<TPassiveSkillKeys, true>>;
 };
+
+export enum ENpcChallenge {
+  FOUR = 4,
+  FIVE = 5,
+}
+
+export type TNpcProps = TCharProps & {
+  challenge: ENpcChallenge;
+};
+
+export type TPassiveSkillKeys = 'trueSight' | 'blindSight';
 
 export enum EMainCharacteristics {
   STR = 'STR',

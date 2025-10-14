@@ -1,5 +1,5 @@
-import { LogKeeper } from './LogKeeper';
-import { roll20 } from './roll';
+import { LogKeeper } from '../LogKeeper';
+import { roll20 } from '../roll';
 import {
   EMainCharacteristics,
   TAction,
@@ -10,7 +10,10 @@ import {
   TModifiers,
   TTacticAction,
   TTurnData,
-} from './types/character.types';
+} from '../types/character.types';
+import { TDuelContext } from '../types/common.types';
+
+import { Conditions } from './Conditions';
 
 export abstract class Character implements TCharProps {
   logKeeper: LogKeeper;
@@ -22,6 +25,8 @@ export abstract class Character implements TCharProps {
   modifiers: TModifiers;
   proficiency: number;
   resources: Record<string, number>;
+  passiveSkills: TCharProps['passiveSkills'];
+  conditions: Conditions;
 
   abstract attackMap: Record<string, TAttack>;
   abstract actionMap: Record<string, TAction>;
@@ -33,10 +38,12 @@ export abstract class Character implements TCharProps {
     this.name = props.name;
     this.characteristics = props.characteristics;
     this.battleCharacteristics = props.battleCharacteristics;
+    this.conditions = new Conditions();
 
     this.modifiers = props.modifiers || {};
     this.proficiency = props.proficiency || 0;
     this.resources = props.resources || {};
+    this.passiveSkills = props.passiveSkills || {};
   }
 
   rollIninitiative() {
@@ -106,7 +113,27 @@ export abstract class Character implements TCharProps {
     this.logKeeper.addLog(this.name, message);
   }
 
-  private isAlive(): boolean {
+  protected isAlive(): boolean {
     return this.battleCharacteristics.HP > 0;
+  }
+
+  isBlinded(context: TDuelContext): boolean {
+    return this.conditions.blinded || context.darkness ? this.canBeBlinded() : false;
+  }
+
+  canBeBlinded(): boolean {
+    return !this.passiveSkills?.trueSight && !this.passiveSkills?.blindSight;
+  }
+
+  isGrappled(): boolean {
+    return this.conditions.grappled;
+  }
+
+  setGrappled(): void {
+    this.conditions.grappled = true;
+  }
+
+  setUnconscious(): void {
+    this.conditions.unconscious = true;
   }
 }
