@@ -3,7 +3,6 @@ import { roll, roll20 } from '../../roll';
 import {
   EMainCharacteristics,
   ENpcChallenge,
-  TAction,
   TAttack,
   TCharProps,
   TMainCharacteristics,
@@ -17,9 +16,6 @@ const attackList = ['bite', 'compression'];
 
 /** предполагается только истинный облик */
 export class Couatl extends NPC {
-  attackMap: Record<string, TAttack>;
-  actionMap: Record<string, TAction>;
-
   constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
     super(
       logKeeper,
@@ -49,6 +45,7 @@ export class Couatl extends NPC {
   }
 
   tactic(): TTacticAction {
+    // не понадобилось
     // if (!this.getResource('spell_cureWounds')) {
     //   this.spell_cureWounds();
     // }

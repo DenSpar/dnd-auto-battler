@@ -1,9 +1,11 @@
 import { LogKeeper } from '../LogKeeper';
-import { TNpcProps } from '../types/character.types';
+import { TAction, TAttack, TNpcProps } from '../types/character.types';
 
 import { Character } from './Character';
 
 export abstract class NPC extends Character {
+  attackMap: Record<string, TAttack>;
+  actionMap: Record<string, TAction>;
   usedAttacks: Record<string, number>;
 
   constructor(logKeeper: LogKeeper, props: TNpcProps, attackList: string[]) {
