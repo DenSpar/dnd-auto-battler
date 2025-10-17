@@ -32,7 +32,7 @@ export type TAttack = {
 };
 
 export type TActionProps = TTurnData & { setContext: Duel['setContext'] };
-export type TAction = (props: TActionProps) => any;
+export type TAction = (props: TActionProps) => void;
 export type TTacticType = 'attack' | 'action';
 export type TTacticAction = { type: TTacticType; key: string };
 
