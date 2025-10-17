@@ -7,4 +7,5 @@ export interface INpcDescription extends ICommonDescription {
 
 interface ICommonDescription {
   description: string;
+  rusName: string;
 }

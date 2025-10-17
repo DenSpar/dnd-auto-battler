@@ -34,6 +34,7 @@ export class Couatl extends NPC {
           description: '',
           challenge: ENpcChallenge.FOUR,
           dndSuLink: 'https://dnd.su/bestiary/57-couatl/',
+          rusName: 'Коатль',
         }),
 
         // TODO: переделать изменение свойств на статичный метод. Скорее всего в Character
