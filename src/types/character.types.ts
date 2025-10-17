@@ -47,15 +47,6 @@ export type TCharProps = {
   passiveSkills?: Partial<Record<TPassiveSkillKeys, true>>;
 };
 
-export enum ENpcChallenge {
-  FOUR = 4,
-  FIVE = 5,
-}
-
-export type TNpcProps = TCharProps & {
-  challenge: ENpcChallenge;
-};
-
 export type TPassiveSkillKeys = 'trueSight' | 'blindSight';
 
 export enum EMainCharacteristics {

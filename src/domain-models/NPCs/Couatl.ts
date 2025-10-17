@@ -2,14 +2,15 @@ import { LogKeeper } from '../../LogKeeper';
 import { roll, roll20 } from '../../roll';
 import {
   EMainCharacteristics,
-  ENpcChallenge,
   TAttack,
   TCharProps,
   TMainCharacteristics,
   TTacticAction,
 } from '../../types/character.types';
+import { ENpcChallenge } from '../../types/npc.types';
 import { Character } from '../Character';
 import { NPC } from '../NPC';
+import { NpcDescription } from '../NPC/NpcDescription';
 
 const characteristics: TMainCharacteristics = { STR: 16, DEX: 20, CON: 17, INT: 17, WIS: 20, CHA: 18 };
 const attackList = ['bite', 'compression'];
@@ -29,7 +30,13 @@ export class Couatl extends NPC {
         resources: { spell_cureWounds: 3 },
         passiveSkills: { trueSight: true },
 
-        challenge: ENpcChallenge.FOUR,
+        desriptions: new NpcDescription({
+          description: '',
+          challenge: ENpcChallenge.FOUR,
+          dndSuLink: 'https://dnd.su/bestiary/57-couatl/',
+        }),
+
+        // TODO: переделать изменение свойств на статичный метод. Скорее всего в Character
         ...overrideCharProps,
       },
       attackList

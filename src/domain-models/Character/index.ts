@@ -1,5 +1,5 @@
-import { LogKeeper } from '../LogKeeper';
-import { roll20 } from '../roll';
+import { LogKeeper } from '../../LogKeeper';
+import { roll20 } from '../../roll';
 import {
   EMainCharacteristics,
   TAction,
@@ -10,10 +10,10 @@ import {
   TModifiers,
   TTacticAction,
   TTurnData,
-} from '../types/character.types';
-import { TDuelContext } from '../types/common.types';
+} from '../../types/character.types';
+import { TDuelContext } from '../../types/common.types';
 
-import { Conditions } from './Conditions';
+import { Conditions } from './../Conditions';
 
 export abstract class Character implements TCharProps {
   logKeeper: LogKeeper;
