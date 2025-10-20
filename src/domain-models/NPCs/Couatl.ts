@@ -3,12 +3,11 @@ import { roll, roll20 } from '../../roll';
 import {
   EMainCharacteristics,
   TAttack,
-  TCharProps,
   TMainCharacteristics,
   TTacticAction,
-} from '../../types/character.types';
-import { ENpcChallenge } from '../../types/npc.types';
-import { Character } from '../Character';
+  TAnyCharacter,
+} from '../BaseCharacter/types';
+import { ENpcChallenge, TNpcProps } from '../NPC/types';
 import { NPC } from '../NPC';
 import { NpcDescription } from '../NPC/NpcDescription';
 
@@ -17,7 +16,7 @@ const attackList = ['bite', 'compression'];
 
 /** предполагается только истинный облик */
 export class Couatl extends NPC {
-  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
+  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TNpcProps>) {
     super(
       logKeeper,
       {
@@ -30,8 +29,8 @@ export class Couatl extends NPC {
         resources: { spell_cureWounds: 3 },
         passiveSkills: { trueSight: true },
 
-        desriptions: new NpcDescription({
-          description: '',
+        description: new NpcDescription({
+          description: '-',
           challenge: ENpcChallenge.FOUR,
           dndSuLink: 'https://dnd.su/bestiary/57-couatl/',
           rusName: 'Коатль',
@@ -140,7 +139,7 @@ export class Couatl extends NPC {
     this.battleCharacteristics.HP = this.battleCharacteristics.HP + cureHP;
   }
 
-  private isAdvantage(enemy: Character): boolean {
+  private isAdvantage(enemy: TAnyCharacter): boolean {
     return enemy.isGrappled();
   }
 }

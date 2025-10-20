@@ -1,9 +1,9 @@
 import { LogKeeper } from '../../LogKeeper';
-import { TCharProps } from '../../types/character.types';
-import { Isabel } from '../characters/Isabel';
+import { TPcProps } from '../PC/types';
+import { Isabel } from '../PCs/Isabel';
 
 export class IsabelForTests extends Isabel {
-  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
+  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TPcProps>) {
     super(logKeeper, { name: 'Isabel_enemy', ...overrideCharProps });
   }
 }

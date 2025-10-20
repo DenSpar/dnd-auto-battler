@@ -1,21 +1,21 @@
-import { Character } from './domain-models/Character';
+import { TAnyCharacter } from './domain-models/BaseCharacter/types';
 import { LogKeeper } from './LogKeeper';
-import { TTacticAction } from './types/character.types';
+import { TTacticAction } from './domain-models/BaseCharacter/types';
 import { TDuelContext } from './types/common.types';
 
 interface IDuelCreatingProps {
-  testedChar: Character;
-  testedEnemy: Character;
+  testedChar: TAnyCharacter;
+  testedEnemy: TAnyCharacter;
   withUnawares?: boolean;
 }
 export class Duel {
   // private, not changed
-  private testedChar: Character;
-  private testedEnemy: Character;
+  private testedChar: TAnyCharacter;
+  private testedEnemy: TAnyCharacter;
   private withUnawares: boolean;
 
   // private, changed
-  private roundOrder: Character[] = [];
+  private roundOrder: TAnyCharacter[] = [];
   private duelContext: TDuelContext = { turnNumber: 1 };
   private logKeeper: LogKeeper;
 
@@ -88,7 +88,7 @@ export class Duel {
       });
   }
 
-  private runTurnWithIncrementation(char: Character, enemy: Character): boolean {
+  private runTurnWithIncrementation(char: TAnyCharacter, enemy: TAnyCharacter): boolean {
     this.addLog(`ход ${this.duelContext.turnNumber}`);
 
     const isEnd = this.runTurnWithoutIncrementation(char, enemy);
@@ -97,7 +97,7 @@ export class Duel {
     return isEnd;
   }
 
-  private runTurnWithoutIncrementation(char: Character, enemy: Character): boolean {
+  private runTurnWithoutIncrementation(char: TAnyCharacter, enemy: TAnyCharacter): boolean {
     const nextTacticAction = char.tactic({ context: this.duelContext, enemy });
     const isEnemyAlive = this.applyTacticAction(nextTacticAction, char, enemy);
     let isEnd = false;
@@ -110,7 +110,7 @@ export class Duel {
     return isEnd;
   }
 
-  private applyTacticAction(nextTacticAction: TTacticAction, thisChar: Character, enemy: Character): boolean {
+  private applyTacticAction(nextTacticAction: TTacticAction, thisChar: TAnyCharacter, enemy: TAnyCharacter): boolean {
     this.addLog(`${thisChar.name} use ${nextTacticAction.type.toUpperCase()} '${nextTacticAction.key}'`);
 
     if (nextTacticAction.type === 'attack') {

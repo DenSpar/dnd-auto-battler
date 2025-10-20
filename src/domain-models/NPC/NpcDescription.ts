@@ -1,5 +1,5 @@
 import { INpcDescription } from 'src/types/descriprition.types';
-import { ENpcChallenge } from 'src/types/npc.types';
+import { ENpcChallenge } from 'src/domain-models/NPC/types';
 
 export class NpcDescription implements INpcDescription {
   readonly challenge: ENpcChallenge;
