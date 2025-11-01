@@ -31,5 +31,6 @@ export function roll(dices: `${number}${TDices}` | `${TDices}`): number {
 }
 
 function rollOneDice(maxValue: number): number {
+  // eslint-disable-next-line sonarjs/pseudo-random
   return Math.ceil(Math.random() * maxValue);
 }

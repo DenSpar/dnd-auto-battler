@@ -1,3 +1,5 @@
 {
-    "jest.jestCommandLine": "npm run test:unit --"
+    "jest.jestCommandLine": "npm run test:unit --",
+    "git.blame.editorDecoration.template": "${subject}",
+    "git.blame.statusBarItem.template": "${subject}"
 }

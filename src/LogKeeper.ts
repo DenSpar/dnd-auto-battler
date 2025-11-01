@@ -11,6 +11,10 @@ export class LogKeeper {
     this.logsStack.push({ name, message });
   }
 
+  unshiftLog(name: string, message: string) {
+    this.logsStack.unshift({ name, message });
+  }
+
   showLogsIfNeed() {
     if (this.showLogsAfter) {
       this.showLogs();
@@ -22,6 +26,7 @@ export class LogKeeper {
   }
 
   private showLogs() {
+    // eslint-disable-next-line no-console
     console.log(this.preparePrettyLogs());
   }
 
