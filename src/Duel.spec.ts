@@ -1,4 +1,4 @@
-import { Isabel } from './domain-models/characters/Isabel';
+import { Isabel } from './domain-models/PCs/Isabel';
 import { Couatl } from './domain-models/NPCs/Couatl';
 import { IsabelForTests } from './domain-models/NPCs/IsabelForTests';
 import { Duel } from './Duel';

@@ -1,7 +1,9 @@
-import { Character } from '../domain-models/Character';
-import { Duel } from '../Duel';
+import { PcDescription } from 'src/domain-models/PC/PcDescription';
+import { BaseCharacter } from '.';
+import { Duel } from '../../Duel';
 
-import { TDuelContext } from './common.types';
+import { TDuelContext } from '../../types/common.types';
+import { NpcDescription } from 'src/domain-models/NPC/NpcDescription';
 
 export type TMainCharacteristics = {
   STR: number;
@@ -21,7 +23,9 @@ export type TModifiers = {
   inititive?: number;
 } & Partial<TMainCharacteristics>;
 
-export type TTurnData = { context: TDuelContext; enemy: Character };
+export type TAnyCharacter = BaseCharacter<TIntersectionDescription>;
+
+export type TTurnData = { context: TDuelContext; enemy: BaseCharacter<TIntersectionDescription> };
 
 export type TAttack = {
   attackRoll(props: TTurnData): {
@@ -32,29 +36,24 @@ export type TAttack = {
 };
 
 export type TActionProps = TTurnData & { setContext: Duel['setContext'] };
-export type TAction = (props: TActionProps) => any;
+export type TAction = (props: TActionProps) => void;
 export type TTacticType = 'attack' | 'action';
 export type TTacticAction = { type: TTacticType; key: string };
 
-export type TCharProps = {
+export type TCharacterProps<TDescription = TIntersectionDescription> = {
   name: string;
   characteristics: TMainCharacteristics;
   battleCharacteristics: TBattleCharacteristics;
 
+  proficiency: number;
+  description: TDescription;
+
   modifiers?: TModifiers;
-  proficiency?: number;
   resources?: Record<string, number>;
   passiveSkills?: Partial<Record<TPassiveSkillKeys, true>>;
 };
 
-export enum ENpcChallenge {
-  FOUR = 4,
-  FIVE = 5,
-}
-
-export type TNpcProps = TCharProps & {
-  challenge: ENpcChallenge;
-};
+export type TIntersectionDescription = PcDescription | NpcDescription;
 
 export type TPassiveSkillKeys = 'trueSight' | 'blindSight';
 

@@ -5,21 +5,25 @@ import {
   TAction,
   TActionProps,
   TAttack,
-  TCharProps,
   TMainCharacteristics,
   TTacticAction,
   TTurnData,
-} from '../../types/character.types';
+  TAnyCharacter,
+} from '../BaseCharacter/types';
+import { ECharacterClass } from '../../types/descriprition.types';
 import { TDuelContext } from '../../types/common.types';
-import { Character } from '../Character';
+import { PcDescription } from '../PC/PcDescription';
+import { PC } from '../PC';
+import { TPcProps } from '../PC/types';
 
 const characteristics: TMainCharacteristics = { STR: 8, DEX: 18, CON: 10, INT: 13, WIS: 12, CHA: 16 };
 
-export class Isabel extends Character {
+export class Isabel extends PC {
   attackMap: Record<string, TAttack>;
   actionMap: Record<string, TAction>;
+  description: PcDescription;
 
-  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
+  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TPcProps>) {
     super(logKeeper, {
       name: 'Isabel',
       characteristics,
@@ -31,6 +35,27 @@ export class Isabel extends Character {
         poison: 1,
       },
       passiveSkills: { blindSight: true },
+      description: new PcDescription({
+        characterLevel: 9,
+        levelExplanation: [
+          { class: ECharacterClass.BARD, archetype: 'College of Whispers', level: 6 },
+          { class: ECharacterClass.ROGUE, archetype: 'Assassin', level: 3 },
+        ],
+        levelUpHistory: [
+          { level: 1, class: ECharacterClass.BARD },
+          { level: 2, class: ECharacterClass.BARD },
+          { level: 3, class: ECharacterClass.BARD },
+          { level: 4, class: ECharacterClass.BARD },
+          { level: 5, class: ECharacterClass.BARD },
+          { level: 6, class: ECharacterClass.BARD },
+          { level: 7, class: ECharacterClass.ROGUE },
+          { level: 8, class: ECharacterClass.ROGUE },
+          { level: 9, class: ECharacterClass.ROGUE },
+        ],
+        description: '-',
+        rusName: 'Изабель',
+      }),
+
       ...overrideCharProps,
     });
 
@@ -100,7 +125,6 @@ export class Isabel extends Character {
     };
   }
 
-  // TODO: 68.4 переделать Ликвидацию
   /**
    * Вы совершаете с преимуществом броски атаки по всем существам, которые еще не совершали ход в этом бою.
    * Кроме того, все попадания по существам, захваченным в расплох, являются критическими попаданиями
@@ -125,7 +149,7 @@ export class Isabel extends Character {
     setContext({ darkness: true });
   }
 
-  private isAdvantage(context: TDuelContext, enemy: Character): boolean {
+  private isAdvantage(context: TDuelContext, enemy: TAnyCharacter): boolean {
     return (context.darkness && enemy.isBlinded(context)) || this.isLiquidation(context);
   }
 }

@@ -1,9 +1,13 @@
-import { LogKeeper } from '../LogKeeper';
-import { TNpcProps } from '../types/character.types';
+import { LogKeeper } from '../../LogKeeper';
+import { TAction, TAttack } from '../BaseCharacter/types';
 
-import { Character } from './Character';
+import { BaseCharacter } from '../BaseCharacter';
+import { NpcDescription } from './NpcDescription';
+import { TNpcProps } from './types';
 
-export abstract class NPC extends Character {
+export abstract class NPC extends BaseCharacter<NpcDescription> implements TNpcProps {
+  attackMap: Record<string, TAttack>;
+  actionMap: Record<string, TAction>;
   usedAttacks: Record<string, number>;
 
   constructor(logKeeper: LogKeeper, props: TNpcProps, attackList: string[]) {

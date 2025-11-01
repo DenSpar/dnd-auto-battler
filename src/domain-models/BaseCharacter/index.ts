@@ -1,21 +1,21 @@
-import { LogKeeper } from '../LogKeeper';
-import { roll20 } from '../roll';
+import { LogKeeper } from '../../LogKeeper';
+import { roll20 } from '../../roll';
 import {
   EMainCharacteristics,
   TAction,
   TAttack,
   TBattleCharacteristics,
-  TCharProps,
+  TCharacterProps,
   TMainCharacteristics,
   TModifiers,
   TTacticAction,
   TTurnData,
-} from '../types/character.types';
-import { TDuelContext } from '../types/common.types';
+} from './types';
+import { TDuelContext } from '../../types/common.types';
 
 import { Conditions } from './Conditions';
 
-export abstract class Character implements TCharProps {
+export abstract class BaseCharacter<TCharacterDescription> implements TCharacterProps<TCharacterDescription> {
   logKeeper: LogKeeper;
 
   name: string;
@@ -25,14 +25,15 @@ export abstract class Character implements TCharProps {
   modifiers: TModifiers;
   proficiency: number;
   resources: Record<string, number>;
-  passiveSkills: TCharProps['passiveSkills'];
+  passiveSkills: TCharacterProps['passiveSkills'];
   conditions: Conditions;
 
   abstract attackMap: Record<string, TAttack>;
   abstract actionMap: Record<string, TAction>;
   abstract tactic(props: TTurnData): TTacticAction;
+  description: TCharacterDescription;
 
-  constructor(logKeeper: LogKeeper, props: TCharProps) {
+  constructor(logKeeper: LogKeeper, props: TCharacterProps<TCharacterDescription>) {
     this.logKeeper = logKeeper;
 
     this.name = props.name;
@@ -44,6 +45,8 @@ export abstract class Character implements TCharProps {
     this.proficiency = props.proficiency || 0;
     this.resources = props.resources || {};
     this.passiveSkills = props.passiveSkills || {};
+
+    this.description = props.description;
   }
 
   rollIninitiative() {

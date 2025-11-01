@@ -2,25 +2,21 @@ import { LogKeeper } from '../../LogKeeper';
 import { roll, roll20 } from '../../roll';
 import {
   EMainCharacteristics,
-  ENpcChallenge,
-  TAction,
   TAttack,
-  TCharProps,
   TMainCharacteristics,
   TTacticAction,
-} from '../../types/character.types';
-import { Character } from '../Character';
+  TAnyCharacter,
+} from '../BaseCharacter/types';
+import { ENpcChallenge, TNpcProps } from '../NPC/types';
 import { NPC } from '../NPC';
+import { NpcDescription } from '../NPC/NpcDescription';
 
 const characteristics: TMainCharacteristics = { STR: 16, DEX: 20, CON: 17, INT: 17, WIS: 20, CHA: 18 };
 const attackList = ['bite', 'compression'];
 
 /** предполагается только истинный облик */
 export class Couatl extends NPC {
-  attackMap: Record<string, TAttack>;
-  actionMap: Record<string, TAction>;
-
-  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TCharProps>) {
+  constructor(logKeeper: LogKeeper, overrideCharProps?: Partial<TNpcProps>) {
     super(
       logKeeper,
       {
@@ -33,7 +29,15 @@ export class Couatl extends NPC {
         resources: { spell_cureWounds: 3 },
         passiveSkills: { trueSight: true },
 
-        challenge: ENpcChallenge.FOUR,
+        description: new NpcDescription({
+          description:
+            'Коатль — доброжелательное змееподобное существо большого интеллекта и проницательности. Их ярко раскрашенные крылья и вежливые манеры говорят о небесном происхождении.',
+          challenge: ENpcChallenge.FOUR,
+          dndSuLink: 'https://dnd.su/bestiary/57-couatl/',
+          rusName: 'Коатль',
+        }),
+
+        // TODO: переделать изменение свойств на статичный метод. Скорее всего в Character
         ...overrideCharProps,
       },
       attackList
@@ -49,6 +53,7 @@ export class Couatl extends NPC {
   }
 
   tactic(): TTacticAction {
+    // не понадобилось
     // if (!this.getResource('spell_cureWounds')) {
     //   this.spell_cureWounds();
     // }
@@ -135,7 +140,7 @@ export class Couatl extends NPC {
     this.battleCharacteristics.HP = this.battleCharacteristics.HP + cureHP;
   }
 
-  private isAdvantage(enemy: Character): boolean {
+  private isAdvantage(enemy: TAnyCharacter): boolean {
     return enemy.isGrappled();
   }
 }
