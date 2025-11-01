@@ -1,5 +1,17 @@
 {
+  "scripts": {
+    "test:unit": "jest -c tests/configs/jest/jest.config.ts --testRegex=\".*\\.spec\\.ts$\""
+  },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "dotenv": "^17.2.3",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
+  },
+  "volta": {
+    "node": "20.12.2"
   }
 }
