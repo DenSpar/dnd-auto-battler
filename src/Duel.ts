@@ -1,92 +1,132 @@
 import { Character } from './Character';
+import { LogKeeper } from './LogKeeper';
 import { TTacticAction } from './types/character.types';
 import { TDuelContext } from './types/common.types';
 
+interface IDuelCreatingProps {
+  testedChar: Character;
+  testedEnemy: Character;
+  withUnawares?: boolean;
+}
 export class Duel {
-  private roundOrder: Character[] = [];
-  private duelContext: TDuelContext = {};
+  // public, not changed
+  public testedChar: Character;
+  public testedEnemy: Character;
 
-  constructor(public first: Character, public second: Character) {}
+  // private, not changed
+  private withUnawares: boolean;
+
+  // private, changed
+  private roundOrder: Character[] = [];
+  private duelContext: TDuelContext = { turnNumber: 1 };
+  private logKeeper: LogKeeper;
+
+  constructor(logKeeper: LogKeeper, duelProps: IDuelCreatingProps) {
+    this.logKeeper = logKeeper;
+    this.testedChar = duelProps.testedChar;
+    this.testedEnemy = duelProps.testedEnemy;
+    this.withUnawares = duelProps.withUnawares || false;
+  }
 
   run() {
-    this.rollRoundOrder();
-    let roundNumber = 1;
     let isEnd = false;
-    while (!isEnd && roundNumber <= 10) {
-      console.log(`раунд ${roundNumber}`);
 
-      isEnd = this.runRound();
-      roundNumber++;
+    if (this.withUnawares) {
+      isEnd = this.runUnawaresRound();
+    }
+
+    if (!isEnd) {
+      this.rollRoundOrder();
+
+      const turnNumber = this.duelContext.turnNumber;
+      while (!isEnd && turnNumber <= 20) {
+        const first = this.roundOrder[0];
+        const second = this.roundOrder[1];
+
+        isEnd = this.runTurnWithIncrementation(first, second);
+        if (isEnd) {
+          break;
+        }
+
+        isEnd = this.runTurnWithIncrementation(second, first);
+      }
     }
 
     if (!isEnd) {
       const [first, second] = this.roundOrder;
-      console.log(
+      this.addLog(
         `ничья: ${first.name}(${first.battleCharacteristics.HP}), ${second.name}(${second.battleCharacteristics.HP})`
       );
     }
+
+    this.logKeeper.showLogsIfNeed();
   }
 
-  setContext(updProps: Record<string, boolean>) {
+  setContext(updProps: Partial<TDuelContext>) {
     for (const [key, value] of Object.entries(updProps)) {
       this.duelContext[key] = value;
     }
   }
 
-  private rollRoundOrder() {
-    const firstInitiative = this.first.rollIninitiative();
-    const secondInitiative = this.second.rollIninitiative();
+  private runUnawaresRound(): boolean {
+    this.addLog('раунд внезапности');
+    return this.runTurnWithoutIncrementation(this.testedChar, this.testedEnemy);
+  }
 
-    console.log('ролл инициативы:');
+  private rollRoundOrder() {
+    const firstInitiative = this.testedChar.rollIninitiative();
+    const secondInitiative = this.testedEnemy.rollIninitiative();
+
+    this.addLog('ролл инициативы:');
 
     this.roundOrder = [
-      { initiative: firstInitiative, character: this.first },
-      { initiative: secondInitiative, character: this.second },
+      { initiative: firstInitiative, character: this.testedChar },
+      { initiative: secondInitiative, character: this.testedEnemy },
     ]
       .sort((a, b) => b.initiative - a.initiative)
       .map((x, i) => {
-        console.log(`> ${i + 1}. ${x.initiative}, ${x.character.name}`);
+        this.addLog(`> ${i + 1}. ${x.initiative}, ${x.character.name}`);
         return x.character;
       });
   }
 
-  // TODO: 68.24 переделать, чтобы был runTurn. В котором будет ход только одного
-  // после каждого хода проверка что оба живы
-  private runRound() {
-    const first = this.roundOrder[0];
-    const second = this.roundOrder[1];
+  private runTurnWithIncrementation(char: Character, enemy: Character): boolean {
+    this.addLog(`ход ${this.duelContext.turnNumber}`);
 
-    const firstCharNextTacticAction = first.tactic({ context: this.duelContext, thisChar: first, enemy: second });
-    const isSecondAlive = this.applyTacticAction(firstCharNextTacticAction, first, second);
-    if (!isSecondAlive) {
-      console.log(`${second.name} is dead, ${first.name} is win`);
-      return true;
+    const isEnd = this.runTurnWithoutIncrementation(char, enemy);
+
+    this.setContext({ turnNumber: this.duelContext.turnNumber + 1 });
+    return isEnd;
+  }
+
+  private runTurnWithoutIncrementation(char: Character, enemy: Character): boolean {
+    const nextTacticAction = char.tactic({ context: this.duelContext, enemy });
+    const isEnemyAlive = this.applyTacticAction(nextTacticAction, char, enemy);
+    let isEnd = false;
+
+    if (!isEnemyAlive) {
+      this.addLog(`${enemy.name} is dead, ${char.name} is win`);
+      isEnd = true;
     }
 
-    const secondCharNextTacticAction = second.tactic({ context: this.duelContext, thisChar: second, enemy: first });
-    const isFirstAlive = this.applyTacticAction(secondCharNextTacticAction, second, first);
-    if (!isFirstAlive) {
-      console.log(`${first.name} is dead, ${second.name} is win`);
-      return true;
-    }
-
-    return false;
+    return isEnd;
   }
 
   private applyTacticAction(nextTacticAction: TTacticAction, thisChar: Character, enemy: Character): boolean {
+    this.addLog(`${thisChar.name} use ${nextTacticAction.type.toUpperCase()} '${nextTacticAction.key}'`);
+
     if (nextTacticAction.type === 'attack') {
       const attack = thisChar.getAttack(nextTacticAction.key);
       const { result: attackResult, isCritSuccess } = attack.attackRoll({
         context: this.duelContext,
-        thisChar,
         enemy,
       });
       if (attackResult >= enemy.battleCharacteristics.AC) {
-        console.log(`attack ${isCritSuccess ? 'CRIT ' : ''}success`);
-        const damage = attack.damageRoll({ context: this.duelContext, isCritSuccess, thisChar, enemy });
+        this.addLog('attack success');
+        const damage = attack.damageRoll({ context: this.duelContext, isCritSuccess, enemy });
         return enemy.takeDamage(damage);
       }
-      console.log(`attack fail`);
+      this.addLog('attack fail');
     }
 
     if (nextTacticAction.type === 'action') {
@@ -94,11 +134,14 @@ export class Duel {
       action({
         context: this.duelContext,
         setContext: (updProps: Record<string, boolean>) => this.setContext(updProps),
-        thisChar,
         enemy,
       });
     }
 
     return true;
+  }
+
+  private addLog(message: string) {
+    this.logKeeper.addLog('DUEL', message);
   }
 }
