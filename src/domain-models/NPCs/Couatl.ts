@@ -30,7 +30,8 @@ export class Couatl extends NPC {
         passiveSkills: { trueSight: true },
 
         description: new NpcDescription({
-          description: '-',
+          description:
+            'Коатль — доброжелательное змееподобное существо большого интеллекта и проницательности. Их ярко раскрашенные крылья и вежливые манеры говорят о небесном происхождении.',
           challenge: ENpcChallenge.FOUR,
           dndSuLink: 'https://dnd.su/bestiary/57-couatl/',
           rusName: 'Коатль',

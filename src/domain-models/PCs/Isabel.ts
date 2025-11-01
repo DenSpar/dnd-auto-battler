@@ -37,8 +37,21 @@ export class Isabel extends PC {
       passiveSkills: { blindSight: true },
       description: new PcDescription({
         characterLevel: 9,
-        levelExplanation: [{ class: ECharacterClass.BARD, archetype: 'archetype', level: 6 }],
-        levelUpHistory: [{ class: ECharacterClass.BARD, level: 6 }],
+        levelExplanation: [
+          { class: ECharacterClass.BARD, archetype: 'College of Whispers', level: 6 },
+          { class: ECharacterClass.ROGUE, archetype: 'Assassin', level: 3 },
+        ],
+        levelUpHistory: [
+          { level: 1, class: ECharacterClass.BARD },
+          { level: 2, class: ECharacterClass.BARD },
+          { level: 3, class: ECharacterClass.BARD },
+          { level: 4, class: ECharacterClass.BARD },
+          { level: 5, class: ECharacterClass.BARD },
+          { level: 6, class: ECharacterClass.BARD },
+          { level: 7, class: ECharacterClass.ROGUE },
+          { level: 8, class: ECharacterClass.ROGUE },
+          { level: 9, class: ECharacterClass.ROGUE },
+        ],
         description: '-',
         rusName: 'Изабель',
       }),
@@ -112,7 +125,6 @@ export class Isabel extends PC {
     };
   }
 
-  // TODO: 68.4 переделать Ликвидацию
   /**
    * Вы совершаете с преимуществом броски атаки по всем существам, которые еще не совершали ход в этом бою.
    * Кроме того, все попадания по существам, захваченным в расплох, являются критическими попаданиями
